@@ -3,7 +3,7 @@
  * Plugin Name: Wolf Sections
  * Plugin URI: http://wpwolf.com/plugin/wolf-sections
  * Description: Create customizable sections with ease!
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: WpWolf
  * Author URI: http://wpwolf.com
  * Requires at least: 3.5
@@ -42,8 +42,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 	 * Contains the main functions for Wolf_Sections
 	 *
 	 * @class Wolf_Sections
-	 * @version 1.0.0
-	 * @since 1.0.0
+	 * @version 1.0.1
+	 * @since 1.0.1
 	 * @package WolfSections
 	 * @author WpWolf
 	 */
@@ -52,7 +52,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 		/**
 		 * @var string
 		 */
-		public $version = '1.0.0';
+		public $version = '1.0.1';
 
 		/**
 		 * @var string
