@@ -1,7 +1,7 @@
 module.exports = {
 
 	js: {                       
-		files: [ '../assets/js/jquery.script.js' ],
+		files: [ '../assets/js/jquery.sections.js' ],
 		tasks: [
 			'jshint',
 			'uglify',

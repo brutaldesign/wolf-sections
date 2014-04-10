@@ -55,6 +55,8 @@
   margin: 0 auto;
   max-width: 1140px;
   width: 92%;
+  z-index: 10;
+  position: relative;
 }
 .wolf-section-wrap:before, .wolf-section-wrap:after {
   content: "";
@@ -96,6 +98,25 @@
 .wolf-section-light-font [class^="icon-"],
 .wolf-section-light-font [class*=" icon-"] {
   color: #fff;
+}
+
+.wolf-section-video-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+.wolf-section-video-container embed, .wolf-section-video-container iframe, .wolf-section-video-container object, .wolf-section-video-container video {
+  max-width: 10000px;
+}
+
+.wolf-section-video {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
 }
 
 @media screen and (max-width: 1030px) {

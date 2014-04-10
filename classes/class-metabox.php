@@ -128,7 +128,7 @@ if ( ! class_exists( 'Wolf_Sections_Metabox' ) ) :
 						wp_editor( $meta, $field_id, $settings = array() );
 
 					// text
-					} elseif ( 'text' == $type ) {
+					} elseif ( 'text' == $type || 'int' == $type ) {
 					
 						echo '<input type="text" name="' . $field_id . '" id="' . $field_id . '" value="' . $meta . '" size="30" />
 								<br><span class="description">' . $desc . '</span>';
@@ -171,10 +171,9 @@ if ( ! class_exists( 'Wolf_Sections_Metabox' ) ) :
 					?>
 
 					<div>
-						<input type="hidden" name="<?php echo $field_id; ?>" id="<?php echo $field_id; ?>" value="<?php echo esc_url( $meta_img); ?>">
-						<img style="max-width:250px;<?php if ( $meta_img == '' ) echo ' display:none;'; ?>" class="wolf-options-img-preview wolf-options-upload-button" src="<?php echo esc_url( $meta_img); ?>" alt="<?php echo $field_id; ?>">
+						<input size="30" type="text" name="<?php echo $field_id; ?>" id="<?php echo $field_id; ?>" value="<?php echo esc_url( $meta_img); ?>">
 						<br><a href="#" class="button wolf-sections-reset-file"><?php _e( 'Clear', 'wolf' ); ?></a>
-						<a href="#" class="button wolf-sections-set-file"><?php _e( 'Choose an image', 'wolf' ); ?></a>
+						<a href="#" class="button wolf-sections-set-file"><?php _e( 'Choose a file', 'wolf' ); ?></a>
 					</div>
 					
 					<div style="clear:both"></div>
@@ -335,7 +334,7 @@ if ( ! class_exists( 'Wolf_Sections_Metabox' ) ) :
 						// loop through fields and save the data
 						foreach ( $meta_fields as $field) {
 
-							if (  $field['type'] == 'background' ) {
+							if (  'background' == $field['type'] ) {
 
 								$meta = get_post_meta( $post_id, $field['id'], true );
 								
@@ -363,10 +362,13 @@ if ( ! class_exists( 'Wolf_Sections_Metabox' ) ) :
 								
 								if ( isset( $_POST[$field['id']] ) ) {
 
-									$new = $_POST[$field['id']];
+									if ( 'int' == $field['type'] )
+										$new = intval( $_POST[$field['id']] );
+
+									else
+										$new = $_POST[$field['id']];
 								}
 									
-								
 								if ( $new && $new != $old) {
 
 									update_post_meta( $post_id, $field['id'], $new);

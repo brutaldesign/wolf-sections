@@ -21,7 +21,6 @@
 		.open();
 	});
 
-
 	$( '.wolf-sections-set-file' ).click(function(e){
 		e.preventDefault();
 		var $el = $( this ).parent();

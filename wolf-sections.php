@@ -391,6 +391,18 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 						),
 
 						array(
+							'label'	=> __( 'Video Background', 'wolf' ),
+							'id'	=> '_wolf_section_video_bg',
+							'type'	=> 'file',
+						),
+
+						array(
+							'label'	=> __( 'Video Opacity (in percent)', 'wolf' ),
+							'id'	=> '_wolf_section_video_bg_opacity',
+							'type'	=> 'int',
+						),
+
+						array(
 							'label'	=> __( 'Full Width', 'wolf' ),
 							'id'	=> '_wolf_section_full',
 							'type'	=> 'checkbox',
@@ -801,10 +813,28 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 
 					if ( 'publish' == get_post_status ( $section_id ) ) {
 					
-						$font_color = get_post_meta( $section_id, '_wolf_section_font_color', true );
-						$full_width = get_post_meta( $section_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
+						$video_bg = get_post_meta( $section_id, '_wolf_section_video_bg', true );
+						
+						$video_opacity = absint( get_post_meta( $section_id, '_wolf_section_video_bg_opacity', true ) ) / 100;
+						$font_color_class = get_post_meta( $section_id, '_wolf_section_font_color', true );
+						$full_width_class = get_post_meta( $section_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
+						$video_bg_class = $video_bg ? ' wolf-section-video-bg' : '';
 
-						$output .= '<section class="wolf-section wolf-section-' . $font_color . '-font' . $full_width . '" id="wolf-section-' . $section_id . '"><div class="wolf-section-inner"><div class="wolf-section-wrap">';
+						$output .= '<section class="wolf-section wolf-section-' . $font_color_class . '-font' . $full_width_class . $video_bg_class . '" id="wolf-section-' . $section_id . '">';
+
+						$output .= '<div class="wolf-section-inner">';
+
+						if ( $video_bg ) {
+							$video_opacity_style = ( $video_opacity > 0 ) ?  ' style="opacity:' . $video_opacity . ';"' : '';
+							$output .= '<div class="wolf-section-video-container">';
+							$output .= '<video' . $video_opacity_style . ' class="wolf-section-video" preload="auto" autoplay="true" loop="loop" muted="muted" volume="0">';
+							$output .= '<source src="' . esc_url( $video_bg ) . '" type="video/mp4">';
+							$output .= '</video>';
+							$output .= '</div>';
+						}
+						
+						$output .= '<div class="wolf-section-wrap">';
+
 						$output .= $this->custom_content_output( get_post_field( 'post_content', $section_id ) );
 						$output .= '</div>';
 						if ( is_user_logged_in() ) {
