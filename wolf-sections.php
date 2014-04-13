@@ -673,7 +673,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 							$css .= "$selector {background : $color $url $position $repeat $attachment}";
 						}
 						
-						if ( $size == 'tile' ) {
+						if ( $size == 'cover' ) {
 
 								$css .= "$selector {
 									-webkit-background-size: 100%; 
@@ -686,7 +686,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 								}";
 							}
 
-						if ( $size == 'hard' ) {
+						if ( $size == 'resize' ) {
 
 							$css .= "$selector {
 								-webkit-background-size: 100%; 

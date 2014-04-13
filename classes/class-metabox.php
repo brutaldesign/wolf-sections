@@ -258,9 +258,9 @@ if ( ! class_exists( 'Wolf_Sections_Metabox' ) ) :
 						/* size
 						--------------------*/
 						$options = array( 
-							'tile' => __( 'cover (resize)', 'wolf' ),
+							'cover' => __( 'cover (resize)', 'wolf' ),
 							'normal' => __( 'normal', 'wolf' ),
-							'hard' => __( 'responsive (hard resize)', 'wolf' ),
+							'resize' => __( 'responsive (hard resize)', 'wolf' ),
 						);
 
 						?>
