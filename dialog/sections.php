@@ -16,7 +16,7 @@ include_once 'wp.php';
 			<select name="section" id="wolf-section-select">
 			<?php while ( $loop->have_posts() ) : $loop->the_post(); ?>
 				<option value="<?php the_ID(); ?>" data-title="<?php the_title(); ?>"><?php the_title(); ?></option>
-			<?php endwhile; wp_reset_query(); ?>
+			<?php endwhile; wp_reset_postdata(); ?>
 			</select>
 		</div>
 	<?php else : ?>

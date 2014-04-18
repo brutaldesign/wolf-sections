@@ -3,7 +3,7 @@
  * Plugin Name: Wolf Sections
  * Plugin URI: http://wpwolf.com/plugin/wolf-sections
  * Description: Create customizable sections with ease!
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: WpWolf
  * Author URI: http://wpwolf.com
  * Requires at least: 3.5
@@ -42,8 +42,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 	 * Contains the main functions for Wolf_Sections
 	 *
 	 * @class Wolf_Sections
-	 * @version 1.0.1
-	 * @since 1.0.1
+	 * @version 1.0.2
+	 * @since 1.0.2
 	 * @package WolfSections
 	 * @author WpWolf
 	 */
@@ -52,7 +52,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 		/**
 		 * @var string
 		 */
-		public $version = '1.0.1';
+		public $version = '1.0.2';
 
 		/**
 		 * @var string
@@ -101,7 +101,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			add_action( 'admin_notices', array( $this, 'create_template' ) );
 
 			// Admin styles and scripts
-			add_action( 'admin_print_styles', array( $this, 'admin_styles' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 
 			// Include required files
@@ -176,7 +176,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			if ( ! is_admin() || defined( 'DOING_AJAX' ) ) {
 
 				// Styles and script
-				add_action( 'wp_print_styles', array( $this, 'frontend_styles' ) );
+				add_action( 'wp_enqueue_scripts', array( $this, 'frontend_styles' ) );
 				add_action( 'wp_enqueue_scripts', array( $this, 'frontend_scripts' ) );
 				add_action( 'wp_head', array( $this, 'output_section_inline_styles' ) );
 
@@ -264,11 +264,15 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			) {
 				$output = '';
 				$template = $this->plugin_path() . '/templates/sections-template.php';
+				$single_template = $this->plugin_path() . '/templates/single_section.php';
 				$theme_dir = get_template_directory();
 
-				if ( copy( $template, $theme_dir . '/sections-template.php' ) ) {
+				if (
+					copy( $template, $theme_dir . '/sections-template.php' ) 
+					&& copy( $single_template, $theme_dir . '/single-section.php' )
+				) {
 					
-					$message = __( 'Your sections template has been succesfully created. To create a sections page, add a new empty page using the "sections" template.', 'wolf' );
+					$message = __( 'Your sections templates have been succesfully created. To create a sections page, add a new empty page using the "sections" template.', 'wolf' );
 
 					$output = '<div class="updated"><p>';
 
@@ -277,7 +281,6 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 					$output .= '</p></div>';
 
 					echo $output;
-
 
 				} else {
 
@@ -309,7 +312,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 		public function admin_styles() {
 			
 			wp_register_style( 'wolf-section-panel-style', $this->plugin_url() . '/assets/css/panel.min.css', false, $this->version, 'all' );
-			wp_enqueue_style( 'wolf-section-panel-style' );		
+			wp_enqueue_style( 'wolf-section-panel-style' );
+			wp_enqueue_style( 'wp-jquery-ui-dialog' );
 		}
 
 		/**
@@ -320,12 +324,10 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 		 */
 		public function admin_scripts() {
 			
-			wp_register_script( 'wolf-section-panel-script', $this->plugin_url() . '/assets/js/min/jquery.panel.min.js', 'jquery', $this->version, true );
+			wp_register_script( 'wolf-section-panel-script', $this->plugin_url() . '/assets/js/min/jquery.panel.min.js', array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-dialog' ), $this->version, true );
 			
 			if ( isset( $_GET['post'] ) && 'page' == get_post_type( $_GET['post'] )  ) {
 
-				wp_enqueue_script( 'jquery-ui-sortable' );
-				wp_enqueue_script( 'jquery-ui-dialog' );
 				wp_enqueue_script( 'tipsy', $this->plugin_url() . '/assets/js/min/tipsy.min.js', 'jquery', true, $this->version );
 				wp_enqueue_script( 'cookie', $this->plugin_url() . '/assets/js/min/memo.min.js', 'jquery', true, $this->version );
 				wp_enqueue_script( 'wolf-section-panel-script' );
@@ -492,7 +494,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 
 			wp_register_style( 'wolf-sections', $this->plugin_url() . '/assets/css/sections.min.css', array(), $this->version, 'all' );
 
-			if ( wolf_is_sections_page() )
+			if ( wolf_is_sections_page() || is_singular( 'section' ) )
 				wp_enqueue_style( 'wolf-sections' );
 		}
 
@@ -507,10 +509,95 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			wp_register_script( 'parallax', $this->plugin_url() . '/assets/js/min/jquery.parallax.min.js', 'jquery', '1.1.3', true );
 			wp_register_script( 'wolf-sections-js', $this->plugin_url() . '/assets/js/min/jquery.sections.min.js', 'jquery', $this->version, true );
 
-			if ( wolf_is_sections_page() ) {
+			if ( wolf_is_sections_page() || is_singular( 'section' ) ) {
 				wp_enqueue_script( 'parallax' );
 				wp_enqueue_script( 'wolf-sections-js' );
 			}
+		}
+
+		/**
+		 * Get single section CSS
+		 *
+		 * @access public
+		 * @return void
+		 */
+		public function get_single_section_css( $post_id  ) {
+
+			if ( $post_id ) {
+				$css = '';
+				$meta_id = '_wolf_section_bg';
+				$selector = '#wolf-section-' . $post_id;
+
+				$url = null;
+				$img = get_post_meta( $post_id, $meta_id . '_img', true );
+				$color = get_post_meta( $post_id, $meta_id . '_color', true );
+				$repeat = get_post_meta( $post_id, $meta_id . '_repeat', true );
+				$position = get_post_meta( $post_id, $meta_id . '_position', true );
+				$attachment = get_post_meta( $post_id, $meta_id . '_attachment', true );
+				$size = get_post_meta( $post_id, $meta_id . '_size', true );
+				$parallax = get_post_meta( $post_id, $meta_id . '_parallax', true );
+				
+				if ( $img )
+					$url = 'url("'. $img .'")';
+
+				if ( $color || $img ) { 
+					
+					if ( $parallax ) {
+
+						$css .= "$selector {background : $color $url $repeat fixed}";
+						$css .= "$selector {background-position : 50% 0}";
+
+					} else {
+						$css .= "$selector {background : $color $url $position $repeat $attachment}";
+					}
+					
+					if ( $size == 'cover' ) {
+
+							$css .= "$selector {
+								-webkit-background-size: 100%; 
+								-o-background-size: 100%; 
+								-moz-background-size: 100%; 
+								background-size: 100%;
+								-webkit-background-size: cover; 
+								-o-background-size: cover; 
+								background-size: cover;
+							}";
+						}
+
+					if ( $size == 'resize' ) {
+
+						$css .= "$selector {
+							-webkit-background-size: 100%; 
+							-o-background-size: 100%; 
+							-moz-background-size: 100%; 
+							background-size: 100%;
+						}";
+					}
+							
+				}
+
+				$padding_top = get_post_meta( $post_id, '_wolf_section_padding_top', true );
+				$padding_bottom = get_post_meta( $post_id, '_wolf_section_padding_bottom', true );
+
+				if ( $padding_top )
+					$css .= "$selector .wolf-section-inner { padding-top:$padding_top }";
+
+				if ( $padding_bottom )
+					$css .= "$selector .wolf-section-inner { padding-bottom:$padding_bottom }";
+
+				$custom_css = get_post_meta( $post_id, '_wolf_section_custom_css', true );
+
+
+				if ( '' != $custom_css ) {
+					$parsed_css =  $this->parse_css( $custom_css );
+					foreach ( $parsed_css as $rule ) {
+				 		$css .= $selector . ' ' . $rule ;
+				 	}
+				}
+
+				return $this->compact_css( $css );
+			}
+
 		}
 
 		/**
@@ -570,7 +657,6 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			$inline_css = '';
 			$inline_js = '';
 			$post_id = $post_id ? $post_id :  $post->ID;
-
 
 			if ( $this->get_sections_css( $post_id ) ) {
 				$inline_css .= '<style type="text/css">'."\n";
@@ -647,81 +733,11 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 
 				foreach ( $sections as $section_id ) {
 
-					$meta_id = '_wolf_section_bg';
-					$selector = '#wolf-section-' . $section_id;
-
-					$url = null;
-					$img = get_post_meta( $section_id, $meta_id . '_img', true );
-					$color = get_post_meta( $section_id, $meta_id . '_color', true );
-					$repeat = get_post_meta( $section_id, $meta_id . '_repeat', true );
-					$position = get_post_meta( $section_id, $meta_id . '_position', true );
-					$attachment = get_post_meta( $section_id, $meta_id . '_attachment', true );
-					$size = get_post_meta( $section_id, $meta_id . '_size', true );
-					$parallax = get_post_meta( $section_id, $meta_id . '_parallax', true );
-					
-					if ( $img )
-						$url = 'url("'. $img .'")';
-
-					if ( $color || $img ) { 
-						
-						if ( $parallax ) {
-
-							$css .= "$selector {background : $color $url $repeat fixed}";
-							$css .= "$selector {background-position : 50% 0}";
-
-						} else {
-							$css .= "$selector {background : $color $url $position $repeat $attachment}";
-						}
-						
-						if ( $size == 'cover' ) {
-
-								$css .= "$selector {
-									-webkit-background-size: 100%; 
-									-o-background-size: 100%; 
-									-moz-background-size: 100%; 
-									background-size: 100%;
-									-webkit-background-size: cover; 
-									-o-background-size: cover; 
-									background-size: cover;
-								}";
-							}
-
-						if ( $size == 'resize' ) {
-
-							$css .= "$selector {
-								-webkit-background-size: 100%; 
-								-o-background-size: 100%; 
-								-moz-background-size: 100%; 
-								background-size: 100%;
-							}";
-						}
-								
-					}
-
-					$padding_top = get_post_meta( $section_id, '_wolf_section_padding_top', true );
-					$padding_bottom = get_post_meta( $section_id, '_wolf_section_padding_bottom', true );
-
-					if ( $padding_top )
-						$css .= "$selector .wolf-section-inner { padding-top:$padding_top }";
-
-					if ( $padding_bottom )
-						$css .= "$selector .wolf-section-inner { padding-bottom:$padding_bottom }";
-
-					$custom_css = get_post_meta( $section_id, '_wolf_section_custom_css', true );
-
-
-					if ( '' != $custom_css ) {
-						$parsed_css =  $this->parse_css( $custom_css );
-						foreach ( $parsed_css as $rule ) {
-					 		$css .= $selector . ' ' . $rule ;
-					 	}
-					}
+					$css .= $this->get_single_section_css( $section_id );
 				}
-
 			}
 
 			return $css;
-
 		}
 
 		/**
@@ -814,7 +830,6 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 					if ( 'publish' == get_post_status ( $section_id ) ) {
 					
 						$video_bg = get_post_meta( $section_id, '_wolf_section_video_bg', true );
-						
 						$video_opacity = absint( get_post_meta( $section_id, '_wolf_section_video_bg_opacity', true ) ) / 100;
 						$font_color_class = get_post_meta( $section_id, '_wolf_section_font_color', true );
 						$full_width_class = get_post_meta( $section_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
@@ -851,6 +866,77 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 			return $output;
 		}
 		
+		/**
+		 * Output Single Section
+		 *
+		 * Used for previewing a section
+		 *
+		 * @access public
+		 * @param int $post_id
+		 * @return string
+		 */
+		public function output_single_section( $post_id = null ) {
+
+			$output = '';
+			$css = '';
+			$post_id = ( $post_id ) ? $post_id :  get_the_ID();
+
+			if ( $post_id ) {
+
+				$parallax = get_post_meta( $post_id, '_wolf_section_bg_parallax', true );
+
+				if ( $parallax ) {
+					$output .= '<script type="text/javascript">'."\n";
+					$output .= '/* Section JS */'."\n";
+					$output .= 'jQuery(function($){$( "#wolf-section-' . $post_id . '").addClass("wolf-section-parallax");});' ."\n";
+					$output .= '</script>'."\n";
+				}
+
+				$output .= '<style type="text/css">'."\n";
+				$output .= '/* Section CSS */'."\n";
+				$output .= $this->get_single_section_css( $post_id ) ."\n";
+				$output .= '</style>'."\n";
+
+				$output .= '<div id="wolf-sections-container">';
+
+				if ( 'publish' == get_post_status ( $post_id ) ) {
+				
+					$video_bg = get_post_meta( $post_id, '_wolf_section_video_bg', true );
+					$video_opacity = absint( get_post_meta( $post_id, '_wolf_section_video_bg_opacity', true ) ) / 100;
+					$font_color_class = get_post_meta( $post_id, '_wolf_section_font_color', true );
+					$full_width_class = get_post_meta( $post_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
+					$video_bg_class = $video_bg ? ' wolf-section-video-bg' : '';
+
+					$output .= '<section class="wolf-section wolf-section-' . $font_color_class . '-font' . $full_width_class . $video_bg_class . '" id="wolf-section-' . $post_id . '">';
+
+					$output .= '<div class="wolf-section-inner">';
+
+					if ( $video_bg ) {
+						$video_opacity_style = ( $video_opacity > 0 ) ?  ' style="opacity:' . $video_opacity . ';"' : '';
+						$output .= '<div class="wolf-section-video-container">';
+						$output .= '<video' . $video_opacity_style . ' class="wolf-section-video" preload="auto" autoplay="true" loop="loop" muted="muted" volume="0">';
+						$output .= '<source src="' . esc_url( $video_bg ) . '" type="video/mp4">';
+						$output .= '</video>';
+						$output .= '</div>';
+					}
+					
+					$output .= '<div class="wolf-section-wrap">';
+
+					$output .= $this->custom_content_output( get_post_field( 'post_content', $post_id ) );
+					$output .= '</div>';
+					if ( is_user_logged_in() ) {
+						$output .= '<a class="wolf-edit-section" href="' . get_edit_post_link( $post_id ) . '">' . __( 'Edit Section', 'wolf' ) . '</a>';
+					}
+					$output .= '</div></section><!-- section#wolf-section-' . $post_id . ' -->';
+
+				}
+
+				$output .= '</div>';
+			}
+
+			return $output;
+		}
+
 		/**
 		 * Add sub menu with the help
 		 *
@@ -915,6 +1001,16 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 
 			global $wolf_sections;
 			echo $wolf_sections->output_sections( $post_id );
+
+		}
+	}
+
+	if ( ! function_exists( 'wolf_single_section' ) ) {
+
+		function wolf_single_section( $post_id = null ) {
+
+			global $wolf_sections;
+			echo $wolf_sections->output_single_section( $post_id );
 
 		}
 	}
