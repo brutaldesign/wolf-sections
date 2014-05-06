@@ -3,11 +3,11 @@
  * Plugin Name: Wolf Sections
  * Plugin URI: http://wpwolf.com/plugin/wolf-sections
  * Description: Create customizable sections with ease!
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: WpWolf
  * Author URI: http://wpwolf.com
  * Requires at least: 3.5
- * Tested up to: 3.8.1
+ * Tested up to: 3.9
  *
  * Text Domain: wolf
  * Domain Path: /lang/
@@ -42,8 +42,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 	 * Contains the main functions for Wolf_Sections
 	 *
 	 * @class Wolf_Sections
-	 * @version 1.0.2
-	 * @since 1.0.2
+	 * @version 1.0.3
+	 * @since 1.0.3
 	 * @package WolfSections
 	 * @author WpWolf
 	 */
@@ -52,7 +52,7 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 		/**
 		 * @var string
 		 */
-		public $version = '1.0.2';
+		public $version = '1.0.3';
 
 		/**
 		 * @var string
@@ -393,8 +393,20 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 						),
 
 						array(
-							'label'	=> __( 'Video Background', 'wolf' ),
+							'label'	=> __( 'Video Background mp4', 'wolf' ),
 							'id'	=> '_wolf_section_video_bg',
+							'type'	=> 'file',
+						),
+
+						array(
+							'label'	=> __( 'Video webm file', 'wolf' ),
+							'id'	=> '_wolf_section_video_bg_webm',
+							'type'	=> 'file',
+						),
+
+						array(
+							'label'	=> __( 'Video ogv/ogg file', 'wolf' ),
+							'id'	=> '_wolf_section_video_bg_ogv',
 							'type'	=> 'file',
 						),
 
@@ -830,6 +842,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 					if ( 'publish' == get_post_status ( $section_id ) ) {
 					
 						$video_bg = get_post_meta( $section_id, '_wolf_section_video_bg', true );
+						$video_webm = get_post_meta( $section_id, '_wolf_section_video_bg_webm', true );
+						$video_ogv = get_post_meta( $section_id, '_wolf_section_video_bg_ogv', true );
 						$video_opacity = absint( get_post_meta( $section_id, '_wolf_section_video_bg_opacity', true ) ) / 100;
 						$font_color_class = get_post_meta( $section_id, '_wolf_section_font_color', true );
 						$full_width_class = get_post_meta( $section_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
@@ -844,6 +858,13 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 							$output .= '<div class="wolf-section-video-container">';
 							$output .= '<video' . $video_opacity_style . ' class="wolf-section-video" preload="auto" autoplay="true" loop="loop" muted="muted" volume="0">';
 							$output .= '<source src="' . esc_url( $video_bg ) . '" type="video/mp4">';
+							
+							if ( $video_webm )
+								$output .= '<source src="' . esc_url( $video_webm ) . '" type="video/webm">';
+
+							if ( $video_ogv )
+								$output .= '<source src="' . esc_url( $video_ogv ) . '" type="video/ogg">';
+							
 							$output .= '</video>';
 							$output .= '</div>';
 						}
@@ -902,6 +923,8 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 				if ( 'publish' == get_post_status ( $post_id ) ) {
 				
 					$video_bg = get_post_meta( $post_id, '_wolf_section_video_bg', true );
+					$video_webm = get_post_meta( $post_id, '_wolf_section_video_bg_webm', true );
+					$video_ogv = get_post_meta( $post_id, '_wolf_section_video_bg_ogv', true );
 					$video_opacity = absint( get_post_meta( $post_id, '_wolf_section_video_bg_opacity', true ) ) / 100;
 					$font_color_class = get_post_meta( $post_id, '_wolf_section_font_color', true );
 					$full_width_class = get_post_meta( $post_id, '_wolf_section_full', true ) ? ' wolf-section-full-width' : '';
@@ -916,6 +939,13 @@ if ( ! class_exists( 'Wolf_Sections' ) ) {
 						$output .= '<div class="wolf-section-video-container">';
 						$output .= '<video' . $video_opacity_style . ' class="wolf-section-video" preload="auto" autoplay="true" loop="loop" muted="muted" volume="0">';
 						$output .= '<source src="' . esc_url( $video_bg ) . '" type="video/mp4">';
+						
+						if ( $video_webm )
+							$output .= '<source src="' . esc_url( $video_webm ) . '" type="video/webm">';
+
+						if ( $video_ogv )
+							$output .= '<source src="' . esc_url( $video_ogv ) . '" type="video/ogg">';
+
 						$output .= '</video>';
 						$output .= '</div>';
 					}
